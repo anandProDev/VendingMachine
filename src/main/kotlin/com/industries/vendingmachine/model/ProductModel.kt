@@ -1,19 +1,21 @@
 package com.industries.vendingmachine.model
 
-import com.industries.vendingmachine.dto.User
+import com.industries.vendingmachine.dto.Product
 import java.math.BigDecimal
 
-data class UserModel(val id: Long, val username: String, val password: String, val deposit: BigDecimal, val role: Role) {
-    fun toUser()= User(
+data class ProductModel(
+    val id: Long,
+    val productname: String,
+    val quantityavailable: Long,
+    val cost: BigDecimal,
+    val sellerid: Long
+) {
+    fun toProduct() = Product(
         id = id,
-        username = username,
-        password = password,
-        deposit = deposit,
-        role = role.name
+        productname = productname,
+        quantityavailable = quantityavailable,
+        cost = cost,
+        sellerid = sellerid
     )
-    }
-
-enum class Role {
-    BUYER,
-    SELLER
 }
+

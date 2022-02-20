@@ -1,30 +1,29 @@
 package com.industries.vendingmachine.dto
 
-import com.industries.vendingmachine.model.Role
-import com.industries.vendingmachine.model.UserModel
+import com.industries.vendingmachine.model.ProductModel
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
 import java.math.BigDecimal
-import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 
-@Table("USERS")
-data class User(
+
+@Table("PRODUCTS")
+data class Product(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    val username: String,
-    val password: String,
-    val deposit: BigDecimal,
-    val role: String
+    val productname: String,
+    val quantityavailable: Long,
+    val cost: BigDecimal,
+    val sellerid: Long
 ) {
-    fun toUserModel() =
-        UserModel(
+    fun toProductModel() =
+        ProductModel(
             id = id,
-            username = username,
-            password = "*******",
-            deposit = deposit,
-            role = Role.valueOf(role)
+            productname = productname,
+            quantityavailable = quantityavailable,
+            cost = cost,
+            sellerid = sellerid
         )
 }

@@ -1,51 +1,62 @@
 package com.industries.vendingmachine.service
 
-import com.industries.vendingmachine.dto.User
-import com.industries.vendingmachine.exception.UserException
-import com.industries.vendingmachine.model.UserModel
-import com.industries.vendingmachine.repo.UserRepository
+import com.industries.vendingmachine.dto.Product
+import com.industries.vendingmachine.exception.ProductException
+import com.industries.vendingmachine.model.ProductModel
+import com.industries.vendingmachine.repo.ProductRepository
 import mu.KotlinLogging
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Service
-import kotlin.random.Random.Default.nextLong
 
 @Service
-class UserService(val db: UserRepository) {
+class ProductService(val db: ProductRepository) {
 
     companion object {
         private val klogger = KotlinLogging.logger { }
     }
 
-    fun getUsers(): List<UserModel> {
-        val usersFromDB = db.findMessages()
-        return usersFromDB.map {
-            it.toUserModel()
+    fun getProducts(): List<ProductModel> {
+        try{
+            val usersFromDB = db.findProducts()
+            return usersFromDB.map {
+                it.toProductModel()
+            }
+        }catch (exception: Exception){
+            klogger.error(exception) { "Error getting data from db" }
+            throw ProductException("Error getting data from db", exception);
         }
     }
 
-    fun createUser(userModel: UserModel): UserModel {
+    fun createProduct(productModel: ProductModel): ProductModel {
         try {
-            val user = User(
-                username = userModel.username,
-                password = userModel.password,
-                deposit = userModel.deposit,
-                role = userModel.role.name
+            val product = Product(
+                productname = productModel.productname,
+                cost = productModel.cost,
+                quantityavailable = productModel.quantityavailable,
+                sellerid = productModel.sellerid
             )
-            return db.save(user).toUserModel()
-        } catch (e: Exception) {
-            klogger.warn (e) { "User with id ${userModel.id} already exists" }
-            throw UserException("User with id ${userModel.id} already exists", e)
+            return db.save<Product?>(product).toProductModel()
+        } catch (exception: Exception) {
+            when(exception){
+                is DuplicateKeyException -> {
+                    klogger.warn (exception) { "Product with id ${productModel.id} already exists" }
+                    throw ProductException("Product with id ${productModel.id} already exists", exception)
+                }
+                else -> {
+                    klogger.error(exception) { "Error getting data from db" }
+                    throw ProductException("Error getting data from db", exception);
+                }
+            }
         }
     }
 
-    fun updateUser(userModel: UserModel): UserModel {
+    fun updateProduct(productModel: ProductModel): ProductModel {
         try {
-            val user = userModel.toUser()
-            return db.save(user).toUserModel()
-        } catch (e: Exception) {
-            klogger.warn (e) {"User with id ${userModel.id} could not be updated exists" }
-            throw UserException("User with id ${userModel.id} could not be updated exists", e)
+            val product = productModel.toProduct()
+            return db.save(product).toProductModel()
+        } catch (exception: Exception) {
+            klogger.warn (exception) {"Product with id ${productModel.id} could not be updated" }
+            throw ProductException("Product with id ${productModel.id} could not be updated", exception)
         }
     }
 
@@ -53,10 +64,19 @@ class UserService(val db: UserRepository) {
         db.deleteAll()
     }
 
-    fun findById(id: Long): UserModel {
-        val user = db.findById(id)
-        if(user.isPresent)
-            return user.get().toUserModel()
-        throw UserException("User does not exist")
+    fun getProduct(id: Long): ProductModel {
+        val product = db.findById(id)
+        if(product.isPresent)
+            return product.get().toProductModel()
+        throw ProductException("Product with $id does not exist")
+    }
+
+    fun deleteProduct(id: Long) {
+        db.deleteById(id)
+    }
+
+    fun isUnAuthorizeSeller(productId: Long): Boolean {
+        val product = getProduct(productId)
+        return (product.sellerid != productId)
     }
 }

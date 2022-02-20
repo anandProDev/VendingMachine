@@ -2,7 +2,4 @@ package com.industries.vendingmachine.model
 
 
 
-class ProductBuyer(val buyerId: Int, val ) {
-
-
-}
+data class ProductBuyerModel(val buyerId: Int, val productId: Int, val quantity: Int)

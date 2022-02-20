@@ -1,6 +1,6 @@
 package com.industries.vendingmachine.model
 
-data class DepositAvailable(
+data class DepositAvailableModel(
     val buyerId: Int,
     val deposit: Int
 )
