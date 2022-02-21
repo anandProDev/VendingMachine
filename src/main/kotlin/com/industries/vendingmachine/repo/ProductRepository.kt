@@ -4,7 +4,7 @@ import com.industries.vendingmachine.dto.Product
 import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.repository.CrudRepository
 
-interface ProductRepository : CrudRepository<Product, Long>{
+interface ProductRepository : CrudRepository<Product, Long> {
 
     @Query("select * from products")
     fun findProducts(): List<Product>

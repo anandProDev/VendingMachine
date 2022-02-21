@@ -9,7 +9,6 @@ class ProductException : RuntimeException {
     constructor(message: String?, cause: Throwable?) : super(message, cause)
 }
 
-
 @ResponseStatus(HttpStatus.NOT_FOUND)
 class ProductUnavailableException : RuntimeException {
     constructor(message: String?) : super(message)

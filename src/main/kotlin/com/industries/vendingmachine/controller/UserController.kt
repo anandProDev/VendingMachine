@@ -16,26 +16,26 @@ class UserController(val userService: UserService) {
 
     companion object {
         private val klogger = KotlinLogging.logger { }
-        const val JSON = "application/json"
+        const val APPLICATION_JSON = "application/json"
     }
 
-    @GetMapping(produces = [JSON])
+    @GetMapping(produces = [APPLICATION_JSON])
     fun getUsers(): ResponseEntity<List<UserModel>> {
         return ResponseEntity(userService.getUsers(), HttpStatus.OK)
     }
 
-    @GetMapping(path = ["/{id}"], produces = [JSON])
+    @GetMapping(path = ["/{id}"], produces = [APPLICATION_JSON])
     fun getUser(@PathVariable id: Long): ResponseEntity<UserModel> {
         return ResponseEntity(userService.getUser(id), HttpStatus.OK)
     }
 
-    @PostMapping(consumes = [JSON], produces = [JSON])
+    @PostMapping(consumes = [APPLICATION_JSON], produces = [APPLICATION_JSON])
     fun createUser(@RequestBody user: UserModel): ResponseEntity<UserModel> {
         val createUser = userService.createUser(user)
         return ResponseEntity(createUser, HttpStatus.CREATED)
     }
 
-    @PutMapping(consumes = [JSON], produces = [JSON])
+    @PutMapping(consumes = [APPLICATION_JSON], produces = [APPLICATION_JSON])
     fun updateUser(@RequestBody userModel: UserModel): ResponseEntity<UserModel> {
         val userModelFromDB = userService.getUser(userModel.id)
         val newModel = userModelFromDB.copy(
@@ -44,15 +44,18 @@ class UserController(val userService: UserService) {
             role = userModel.role,
             deposit = userModel.deposit
         )
-        return ResponseEntity(newModel, HttpStatus.OK)
+        val updatedModel = userService.updateUser(newModel)
+
+        return ResponseEntity(updatedModel, HttpStatus.OK)
     }
 
     @DeleteMapping
-    fun deleteAllUsers() {
+    fun deleteAllUsers(): ResponseEntity<HttpStatus> {
         userService.deleteAll()
+        return ResponseEntity(HttpStatus.NO_CONTENT)
     }
 
-    @PutMapping("/{id}", consumes = [JSON], produces = [JSON])
+    @PutMapping("/{id}", consumes = [APPLICATION_JSON], produces = [APPLICATION_JSON])
     fun resetDeposit(@PathVariable id: Long): ResponseEntity<UserModel> {
         val user = userService.getUser(id)
         if (user.role == Role.SELLER) {

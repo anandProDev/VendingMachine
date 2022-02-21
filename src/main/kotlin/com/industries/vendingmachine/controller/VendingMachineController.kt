@@ -16,20 +16,20 @@ import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 
 @RestController("vendingmachine")
-class VendingMachineController(val productService: ProductService, val userService: UserService){
+class VendingMachineController(val productService: ProductService, val userService: UserService) {
 
     var depositHolder = HashMap<Int, Int>()
 
     companion object {
         private val klogger = KotlinLogging.logger { }
-        const val JSON = "application/json"
+        const val APPLICATION_JSON = "application/json"
     }
 
-    @PostMapping("/deposit", consumes = [JSON], produces = [JSON])
+    @PostMapping("/deposit", consumes = [APPLICATION_JSON], produces = [APPLICATION_JSON])
     fun deposit(@RequestBody depositorModel: DepositorModel): ResponseEntity<DepositAvailableModel> {
         val (buyerId, amount) = depositorModel
 
-        if(isSeller(buyerId)){
+        if (isSeller(buyerId)) {
             klogger.info { "Seller with id $buyerId attempted to deposit money" }
             throw UserNotAllowedException("Only buyer allowed to deposit money")
         }
@@ -46,11 +46,11 @@ class VendingMachineController(val productService: ProductService, val userServi
         return ResponseEntity<DepositAvailableModel>(depositAvailableModel, HttpStatus.OK)
     }
 
-    @PostMapping("/buy", consumes = [JSON], produces = [JSON])
+    @PostMapping("/buy", consumes = [APPLICATION_JSON], produces = [APPLICATION_JSON])
     fun buy(@RequestBody productBuyerModel: ProductBuyerModel): ResponseEntity<VendingMachineResponseModel> {
         val (buyerId, productId, quantity) = productBuyerModel
 
-        if(isSeller(buyerId)) {
+        if (isSeller(buyerId)) {
             klogger.info { "Seller with id $buyerId attempted to buy product" }
             throw UserNotAllowedException("Only buyer allowed to purchase product")
         }
@@ -58,14 +58,19 @@ class VendingMachineController(val productService: ProductService, val userServi
         val availableFunds = BigDecimal(depositHolder[buyerId] ?: 0)
         val product = productService.getProduct(productId.toLong())
         val productCost = product.cost * BigDecimal(quantity)
-        if(quantity > product.quantityavailable)
+        if (quantity > product.quantityavailable)
             throw NotEnoughItemsInVendingMachineException("Quantity requested unavailable")
 
-        if(productCost > availableFunds)
+        if (productCost > availableFunds)
             throw FundsUnavailableException("Sorry, not enough funds to complete purchase")
 
         val fundsCurrentlyAvailable = availableFunds - productCost
         depositHolder[buyerId] = fundsCurrentlyAvailable.toInt()
+
+        val productWithAvailableQuantity = product.copy(
+            quantityavailable = (product.quantityavailable - quantity)
+        )
+        productService.updateProduct(productWithAvailableQuantity)
 
         val vendingMachineResponseModel =
             VendingMachineResponseModel(productCost, fundsCurrentlyAvailable, product.productname)
@@ -75,8 +80,9 @@ class VendingMachineController(val productService: ProductService, val userServi
     private fun isSeller(buyerId: Int) = userService.getUser(buyerId.toLong()).role != Role.BUYER
 }
 
-enum class AllowedDepositDenomination(val value: Int){
+enum class AllowedDepositDenomination(val value: Int) {
     FIVE(5), TEN(10), TWENTY(20), FIFTY(50), HUNDRED(100);
+
     companion object {
         fun fromInt(value: Int) = values().find { it.value == value }
         fun getValues() = values().map { it.value }

@@ -1,7 +1,6 @@
 package com.industries.vendingmachine.controller
 
 import com.industries.vendingmachine.exception.ProductException
-import com.industries.vendingmachine.exception.ProductUnavailableException
 import com.industries.vendingmachine.exception.SellerNotAllowedToPerformOperationException
 import com.industries.vendingmachine.model.ProductModel
 import com.industries.vendingmachine.service.ProductService
@@ -16,31 +15,28 @@ class ProductController(val productService: ProductService) {
 
     companion object {
         private val klogger = KotlinLogging.logger { }
-        const val JSON = "application/json"
+        const val APPLICATION_JSON = "application/json"
     }
 
-    @GetMapping(produces = [JSON])
+    @GetMapping(produces = [APPLICATION_JSON])
     fun getProducts(): ResponseEntity<List<ProductModel>> {
         val products = productService.getProducts()
-        if (products.isEmpty())
-            throw ProductUnavailableException("Products unavailable")
-
         return ResponseEntity(products, HttpStatus.OK)
     }
 
-    @PostMapping(consumes = [JSON])
+    @PostMapping(consumes = [APPLICATION_JSON])
     fun createProduct(@RequestBody productModel: ProductModel): ResponseEntity<ProductModel> {
         val product = productService.createProduct(productModel)
         return ResponseEntity(product, HttpStatus.CREATED)
     }
 
-    @PutMapping(consumes = [JSON], produces = [JSON])
-    fun updateUser(@RequestBody productModel: ProductModel): ResponseEntity<ProductModel> {
+    @PutMapping(consumes = [APPLICATION_JSON], produces = [APPLICATION_JSON])
+    fun updateProduct(@RequestBody productModel: ProductModel): ResponseEntity<ProductModel> {
 
         if (productService.isUnAuthorizeSeller(productModel.id))
             throw SellerNotAllowedToPerformOperationException("Seller not allowed to update product $productModel")
 
-        if(productModel.cost.toInt() % 5 != 0)
+        if (productModel.cost.toInt() % 5 != 0)
             throw ProductException("Product cost must be in multiples of 5")
 
         val productModelFromDB = productService.getProduct(productModel.id)
@@ -51,20 +47,16 @@ class ProductController(val productService: ProductService) {
             sellerid = productModel.sellerid,
             cost = productModel.cost
         )
-        productService.updateProduct(newModel)
-        return ResponseEntity(newModel, HttpStatus.OK)
+        val updatedProduct = productService.updateProduct(newModel)
+        return ResponseEntity(updatedProduct, HttpStatus.OK)
     }
 
     @DeleteMapping(path = ["/{id}"])
-    fun deleteAllProduct(@PathVariable id: Long) {
+    fun deleteProduct(@PathVariable id: Long): ResponseEntity<HttpStatus> {
         if (productService.isUnAuthorizeSeller(id))
             throw SellerNotAllowedToPerformOperationException("Seller not allowed to delete product with id $id")
 
         productService.deleteProduct(id)
-    }
-
-    @DeleteMapping
-    fun deleteAllProducts() {
-        productService.deleteAll()
+        return ResponseEntity(HttpStatus.NO_CONTENT)
     }
 }

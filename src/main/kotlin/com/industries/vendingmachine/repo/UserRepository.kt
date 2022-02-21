@@ -4,10 +4,10 @@ import com.industries.vendingmachine.dto.User
 import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.repository.CrudRepository
 
-interface UserRepository : CrudRepository<User, Long>{
+interface UserRepository : CrudRepository<User, Long> {
 
     @Query("select * from users")
-    fun findMessages(): List<User>
+    fun findUsers(): List<User>
 
     @Query("DELETE FROM users WHERE id = #{id}")
     override fun deleteById(id: Long)
