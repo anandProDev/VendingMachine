@@ -9,9 +9,6 @@ interface ProductRepository : CrudRepository<Product, Long> {
     @Query("select * from products")
     fun findProducts(): List<Product>
 
-    @Query("DELETE FROM products WHERE id = #{id}")
-    override fun deleteById(id: Long)
-
     @Query(
         "INSERT INTO products(id, productName, amountAvailable,deposit, sellerid) " +
                 " VALUES (#{id}, #{productName}, #{amountAvailable}, #{deposit}, #{sellerid})"

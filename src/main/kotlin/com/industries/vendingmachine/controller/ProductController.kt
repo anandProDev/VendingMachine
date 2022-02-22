@@ -59,9 +59,9 @@ class ProductController(val productService: ProductService, val userService: Use
         return ResponseEntity(updatedProduct, HttpStatus.OK)
     }
 
-    @DeleteMapping(path = ["/{id}"])
-    fun deleteProduct(@PathVariable id: Long): ResponseEntity<HttpStatus> {
-        if (productService.isUnAuthorizeSeller(id))
+    @DeleteMapping(path = ["/{id}/{sellerId}"])
+    fun deleteProduct(@PathVariable id: Long, @PathVariable sellerId: Long): ResponseEntity<HttpStatus> {
+        if (productService.isUnAuthorizeSeller(sellerId))
             throw SellerNotAllowedToPerformOperationException("Seller not allowed to delete product with id $id")
 
         productService.deleteProduct(id)

@@ -49,6 +49,12 @@ class UserController(val userService: UserService) {
         return ResponseEntity(updatedModel, HttpStatus.OK)
     }
 
+    @DeleteMapping(path = ["/{id}"])
+    fun deleteUserById(@PathVariable id: Long): ResponseEntity<HttpStatus> {
+        userService.deleteById(id)
+        return ResponseEntity(HttpStatus.NO_CONTENT)
+    }
+
     @DeleteMapping
     fun deleteAllUsers(): ResponseEntity<HttpStatus> {
         userService.deleteAll()

@@ -163,4 +163,21 @@ class UserServiceTest {
 
         assertThrows<UserException> { userService.getUser(user.id) }
     }
+
+    @DisplayName("delete user by id")
+    @Test
+    fun `delete users by id`() {
+
+        every { userRepository.deleteById(userModel.id) } returns Unit
+
+        userService.deleteById(userModel.id)
+        verify(exactly = 1) { userRepository.deleteById(userModel.id) }
+    }
+
+    @DisplayName("delete users by id")
+    @Test
+    fun `exception thrown when deleting user by id`() {
+        every { userService.deleteById(user.id) } throws Exception("db error")
+        assertThrows<UserException> { userService.deleteById(user.id) }
+    }
 }

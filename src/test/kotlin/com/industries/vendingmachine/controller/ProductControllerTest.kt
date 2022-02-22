@@ -160,7 +160,7 @@ class ProductControllerTest {
                     )
 
                     assertThrows<SellerNotAllowedToPerformOperationException> {
-                        productController.deleteProduct(productModel.id)
+                        productController.deleteProduct(productModel.id, productModel.sellerid)
                     }
                 }
             }
@@ -171,7 +171,7 @@ class ProductControllerTest {
                 every { productService.deleteProduct(productModel.id) } returns Unit
                 every { productService.isUnAuthorizeSeller(productModel.id) } returns false
 
-                val response = productController.deleteProduct(productModel.id)
+                val response = productController.deleteProduct(productModel.id, productModel.sellerid)
 
                 verify(exactly = 1) { productService.deleteProduct(productModel.id) }
                 assertEquals(HttpStatus.NO_CONTENT.value(), response.statusCode.value())

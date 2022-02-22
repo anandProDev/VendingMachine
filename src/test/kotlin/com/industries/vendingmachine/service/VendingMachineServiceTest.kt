@@ -1,17 +1,18 @@
 package com.industries.vendingmachine.service
 
 import com.industries.vendingmachine.controller.AllowedDepositDenomination
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 
 @DisplayName("Return change in denominations")
-class VendingMachineServiceTest{
+class VendingMachineServiceTest {
 
     val vendingMachineService = VendingMachineService()
+
     @Test
     @DisplayName("Return denomination")
-    fun `return change in denominations successful`(){
+    fun `return change in denominations successful`() {
         var calculateChange = vendingMachineService.calculateChange(100)
         assertEquals(AllowedDepositDenomination.HUNDRED.value, calculateChange[0])
 

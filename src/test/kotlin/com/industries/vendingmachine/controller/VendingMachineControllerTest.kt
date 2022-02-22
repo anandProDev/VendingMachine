@@ -77,7 +77,7 @@ class VendingMachineControllerTest {
         )
         every { userService.getUser(depositorModel.buyerId.toLong()) } returns updatedModel
         val updatedDeposit = updatedModel.copy(deposit = BigDecimal(200))
-        every { userService.updateUser(updatedDeposit)} returns updatedDeposit
+        every { userService.updateUser(updatedDeposit) } returns updatedDeposit
 
         val deposit = vendingMachineController.deposit(depositorModel)
 

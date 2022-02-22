@@ -88,6 +88,18 @@ class UserControllerTest {
     }
 
     @Test
+    @DisplayName("Delete user by id")
+    fun `delete user by id`() {
+
+        every { userService.deleteById(userModel.id) } returns Unit
+
+        val items = userController.deleteUserById(userModel.id)
+
+        verify(exactly = 1) { userService.deleteById(userModel.id) }
+        assertEquals(HttpStatus.NO_CONTENT.value(), items.statusCode.value())
+    }
+
+    @Test
     @DisplayName("Delete all users")
     fun `deleteAllUsersIsSuccessful`() {
 

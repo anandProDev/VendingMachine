@@ -1,0 +1,6 @@
+2022-02-22 20:02:57 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "DELETE FROM products WHERE id = #{id}[*]" [42000-200]
+2022-02-22 20:02:59 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "DELETE FROM products WHERE id = #{id}[*]" [42000-200]
+2022-02-22 20:03:46 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement "DELETE FROM products WHERE id = #{id}[*]" [42000-200]

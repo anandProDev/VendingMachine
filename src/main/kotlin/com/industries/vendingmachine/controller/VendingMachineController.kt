@@ -19,7 +19,11 @@ import java.math.BigDecimal
 
 @RestController
 @RequestMapping("vendingmachine")
-class VendingMachineController(val productService: ProductService, val userService: UserService, val vendingMachineService: VendingMachineService) {
+class VendingMachineController(
+    val productService: ProductService,
+    val userService: UserService,
+    val vendingMachineService: VendingMachineService
+) {
 
     companion object {
         private val klogger = KotlinLogging.logger { }
@@ -91,7 +95,7 @@ class VendingMachineController(val productService: ProductService, val userServi
 }
 
 enum class AllowedDepositDenomination(val value: Int) {
-    HUNDRED(100), FIFTY(50), TWENTY(20), TEN(10),FIVE(5) ;
+    HUNDRED(100), FIFTY(50), TWENTY(20), TEN(10), FIVE(5);
 
     companion object {
         fun fromInt(value: Int) = values().find { it.value == value }

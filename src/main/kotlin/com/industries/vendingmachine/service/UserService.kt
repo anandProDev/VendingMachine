@@ -72,4 +72,13 @@ class UserService(val db: UserRepository) {
             throw UserException("Something went wrong when finding user with id $id", exception)
         }
     }
+
+    fun deleteById(id: Long) {
+        try {
+            db.deleteById(id)
+        } catch (exception: Exception) {
+            klogger.warn(exception) { "Something went wrong when deleting user with id $id" }
+            throw UserException("Something went wrong when deleting user with id $id", exception)
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package com.industries.vendingmachine.service
 
 import com.industries.vendingmachine.controller.AllowedDepositDenomination
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 
 @Service
@@ -24,7 +23,7 @@ class VendingMachineService {
         return change
     }
 
-    private fun findQuotientAndRemainder(amount: Int, denomination: AllowedDepositDenomination): Pair<Int, Int>{
+    private fun findQuotientAndRemainder(amount: Int, denomination: AllowedDepositDenomination): Pair<Int, Int> {
         val quotient = amount / denomination.value
         val remainder = amount % denomination.value
         return Pair(quotient, remainder)

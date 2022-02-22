@@ -9,9 +9,6 @@ interface UserRepository : CrudRepository<User, Long> {
     @Query("select * from users")
     fun findUsers(): List<User>
 
-    @Query("DELETE FROM users WHERE id = #{id}")
-    override fun deleteById(id: Long)
-
     @Query(
         "INSERT INTO users(id, username, password,deposit, role) " +
                 " VALUES (#{id}, #{username}, #{password}, #{deposit}, #{role})"
