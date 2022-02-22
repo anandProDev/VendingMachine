@@ -55,7 +55,7 @@ class UserController(val userService: UserService) {
         return ResponseEntity(HttpStatus.NO_CONTENT)
     }
 
-    @PutMapping("/{id}", consumes = [APPLICATION_JSON], produces = [APPLICATION_JSON])
+    @PutMapping("/resetDeposit/{id}", produces = [APPLICATION_JSON])
     fun resetDeposit(@PathVariable id: Long): ResponseEntity<UserModel> {
         val user = userService.getUser(id)
         if (user.role == Role.SELLER) {

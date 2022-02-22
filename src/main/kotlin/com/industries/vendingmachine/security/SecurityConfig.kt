@@ -18,7 +18,6 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
             .csrf().disable()
             .authorizeRequests()
             .antMatchers(HttpMethod.POST, "/user").permitAll()
-            .antMatchers(HttpMethod.GET, "/product").permitAll()
             .anyRequest().authenticated()
             .and()
             .httpBasic()

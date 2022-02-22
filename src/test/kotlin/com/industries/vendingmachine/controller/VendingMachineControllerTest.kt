@@ -6,6 +6,7 @@ import com.industries.vendingmachine.exception.UserNotAllowedException
 import com.industries.vendingmachine.model.*
 import com.industries.vendingmachine.service.ProductService
 import com.industries.vendingmachine.service.UserService
+import com.industries.vendingmachine.service.VendingMachineService
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,7 +23,8 @@ import java.math.BigDecimal
 class VendingMachineControllerTest {
     private val userService: UserService = mockk()
     private val productService: ProductService = mockk()
-    private val vendingMachineController = VendingMachineController(productService, userService)
+    private val vendingMachineService: VendingMachineService = mockk()
+    private val vendingMachineController = VendingMachineController(productService, userService, vendingMachineService)
 
     val depositorModel = DepositorModel(1, 100)
     val productModel = ProductModel(1, "a", 1, BigDecimal(10), 1)
@@ -74,11 +76,13 @@ class VendingMachineControllerTest {
             role = Role.BUYER
         )
         every { userService.getUser(depositorModel.buyerId.toLong()) } returns updatedModel
+        val updatedDeposit = updatedModel.copy(deposit = BigDecimal(200))
+        every { userService.updateUser(updatedDeposit)} returns updatedDeposit
 
         val deposit = vendingMachineController.deposit(depositorModel)
 
         assertEquals(HttpStatus.OK.value(), deposit.statusCode.value())
-        assertEquals(depositorModel.amount, deposit.body?.deposit)
+        assertEquals(updatedDeposit.deposit.toInt(), deposit.body?.deposit)
         assertEquals(depositorModel.buyerId, deposit.body?.buyerId)
     }
 
@@ -100,8 +104,11 @@ class VendingMachineControllerTest {
             role = Role.BUYER
         )
         every { userService.getUser(depositorModel.buyerId.toLong()) } returns updatedModel
-        vendingMachineController.deposit(depositorModel)
+        val modelWithNewAmount = updatedModel.copy(deposit = BigDecimal(200))
+        every { userService.updateUser(modelWithNewAmount) } returns modelWithNewAmount
         every { productService.getProduct(productBuyerModel.productId.toLong()) } returns productModel
+
+        vendingMachineController.deposit(depositorModel)
 
         assertThrows<NotEnoughItemsInVendingMachineException> {
             vendingMachineController.buy(productBuyerModel)
@@ -117,8 +124,11 @@ class VendingMachineControllerTest {
         )
         every { userService.getUser(depositorModel.buyerId.toLong()) } returns updatedModel
         val updatedDepositModel = depositorModel.copy(amount = 5)
-        vendingMachineController.deposit(updatedDepositModel)
         every { productService.getProduct(productBuyerModel.productId.toLong()) } returns productModel
+        val modelWithNewAmount = updatedModel.copy(deposit = BigDecimal(105))
+        every { userService.updateUser(modelWithNewAmount) } returns modelWithNewAmount
+
+        vendingMachineController.deposit(updatedDepositModel)
 
         assertThrows<NotEnoughItemsInVendingMachineException> {
             vendingMachineController.buy(productBuyerModel)
@@ -127,26 +137,28 @@ class VendingMachineControllerTest {
 
     @DisplayName("Buyer purchase of product successful")
     @Test
-    fun `Buyer purchses product successfully`() {
-        every { userService.getUser(productBuyerModel.buyerId.toLong()) } returns userModel
+    fun `Buyer purchases product successfully`() {
+
         val updatedModel = userModel.copy(
             role = Role.BUYER
         )
-        every { userService.getUser(depositorModel.buyerId.toLong()) } returns updatedModel
-        vendingMachineController.deposit(depositorModel)
+        every { userService.getUser(productBuyerModel.buyerId.toLong()) } returns updatedModel
 
         val updatedProductModel = productModel.copy(quantityavailable = 5)
         every { productService.getProduct(productBuyerModel.productId.toLong()) } returns updatedProductModel
         every { productService.updateProduct(any()) } returns productModel
+
+        val modelWithDeposit = updatedModel.copy(deposit = BigDecimal(80))
+        every { userService.updateUser(modelWithDeposit) } returns modelWithDeposit
+
+        every { vendingMachineService.calculateChange(any()) } returns arrayListOf(5)
 
         val response = vendingMachineController.buy(productBuyerModel)
 
         assertEquals(HttpStatus.OK.value(), response.statusCode.value())
         assertEquals(BigDecimal(20), response.body?.costOfPurchase)
         assertEquals(BigDecimal(80), response.body?.amountRemaining)
+        assertEquals(AllowedDepositDenomination.FIVE.value, response.body?.denominationsReturned?.getOrNull(0))
         assertEquals(productModel.productname, response.body?.productName)
-
     }
-
-
 }

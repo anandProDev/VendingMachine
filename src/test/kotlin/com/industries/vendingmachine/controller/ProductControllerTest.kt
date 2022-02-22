@@ -2,8 +2,12 @@ package com.industries.vendingmachine.controller
 
 import com.industries.vendingmachine.exception.ProductException
 import com.industries.vendingmachine.exception.SellerNotAllowedToPerformOperationException
+import com.industries.vendingmachine.exception.UserNotAllowedException
 import com.industries.vendingmachine.model.ProductModel
+import com.industries.vendingmachine.model.Role
+import com.industries.vendingmachine.model.UserModel
 import com.industries.vendingmachine.service.ProductService
+import com.industries.vendingmachine.service.UserService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -23,8 +27,18 @@ import java.math.BigDecimal
 class ProductControllerTest {
 
     private val productService: ProductService = mockk()
-    private val productController = ProductController(productService)
+    private val userService: UserService = mockk()
+    private val productController = ProductController(productService, userService)
+
     val productModel = ProductModel(1, "a", 1, BigDecimal(10), 1)
+
+    private val userModel = UserModel(
+        1,
+        "myusername",
+        "mypassword",
+        BigDecimal(100),
+        Role.BUYER
+    )
 
     @Test
     @DisplayName("No products found")
@@ -38,7 +52,8 @@ class ProductControllerTest {
     }
 
     @Test
-    fun `returnsProductsSuccessfully`() {
+    @DisplayName("Returns products")
+    fun `returns Products Successfully`() {
         every { productService.getProducts() } returns listOf(productModel)
 
         val items = productController.getProducts()
@@ -50,8 +65,12 @@ class ProductControllerTest {
         assertEquals(productModel, body)
     }
 
+    @DisplayName("Create product successful")
     @Test
     fun `createProductSuccessfully`() {
+
+        val sellerUserModel = userModel.copy(role = Role.SELLER)
+        every { userService.getUser(productModel.sellerid) } returns sellerUserModel
         every { productService.createProduct(productModel) } returns productModel
 
         val response = productController.createProduct(productModel)
@@ -62,6 +81,18 @@ class ProductControllerTest {
         assertEquals(productModel, body)
     }
 
+    @DisplayName("Buyer fails to create product")
+    @Test
+    fun `createProduct fails throwing UserNotAllowedException`() {
+
+        val buyerUserModel = userModel.copy(role = Role.BUYER)
+        every { userService.getUser(productModel.sellerid) } returns buyerUserModel
+        every { productService.createProduct(productModel) } returns productModel
+
+        assertThrows<UserNotAllowedException> { productController.createProduct(productModel) }
+
+        verify(exactly = 1) { userService.getUser(productModel.id) }
+    }
 
     @Nested
     inner class `given a product to update`() {

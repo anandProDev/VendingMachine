@@ -2,8 +2,11 @@ package com.industries.vendingmachine.controller
 
 import com.industries.vendingmachine.exception.ProductException
 import com.industries.vendingmachine.exception.SellerNotAllowedToPerformOperationException
+import com.industries.vendingmachine.exception.UserNotAllowedException
 import com.industries.vendingmachine.model.ProductModel
+import com.industries.vendingmachine.model.Role
 import com.industries.vendingmachine.service.ProductService
+import com.industries.vendingmachine.service.UserService
 import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -11,7 +14,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("product")
-class ProductController(val productService: ProductService) {
+class ProductController(val productService: ProductService, val userService: UserService) {
 
     companion object {
         private val klogger = KotlinLogging.logger { }
@@ -26,6 +29,11 @@ class ProductController(val productService: ProductService) {
 
     @PostMapping(consumes = [APPLICATION_JSON])
     fun createProduct(@RequestBody productModel: ProductModel): ResponseEntity<ProductModel> {
+        if (isBuyer(productModel.sellerid.toInt())) {
+            klogger.info { "Buyer with id ${productModel.id} tried to create a product $productModel" }
+            throw UserNotAllowedException("Buyer not allowed to create product")
+        }
+
         val product = productService.createProduct(productModel)
         return ResponseEntity(product, HttpStatus.CREATED)
     }
@@ -59,4 +67,6 @@ class ProductController(val productService: ProductService) {
         productService.deleteProduct(id)
         return ResponseEntity(HttpStatus.NO_CONTENT)
     }
+
+    private fun isBuyer(id: Int) = userService.getUser(id.toLong()).role == Role.BUYER
 }

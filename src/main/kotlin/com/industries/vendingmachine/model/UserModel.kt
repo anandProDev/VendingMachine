@@ -7,7 +7,7 @@ data class UserModel(
     val id: Long,
     val username: String,
     val password: String,
-    val deposit: BigDecimal,
+    val deposit: BigDecimal = BigDecimal(0.0),
     val role: Role
 ) {
     fun toUser() = User(
